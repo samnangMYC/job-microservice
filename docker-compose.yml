@@ -1,0 +1,49 @@
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: job_postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: jobdb
+    ports:
+      - "5532:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - apsor-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: job_pgadmin_ui
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "6060:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - apsor-network
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: job_zipkin
+    ports:
+      - "9411:9411"
+    restart: unless-stopped
+    networks:
+      - apsor-network
+
+networks:
+  apsor-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  pgadmin_data:
