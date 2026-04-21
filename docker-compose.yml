@@ -95,7 +95,7 @@ services:
 
   jobms:
     image: samnangprod/jobms:latest
-    container_name: job
+    container_name: job.txt
     ports:
       - 8082:8082
     depends_on:

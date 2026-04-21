@@ -13,7 +13,7 @@ spec:
         app: job
     spec:
       containers:
-        - name: job
+        - name: job.txt
           image: samnangprod/jobms:latest
           imagePullPolicy: Always
           ports:

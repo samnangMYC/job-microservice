@@ -1,0 +1,17 @@
+
+-- build jar image --
+./mvnw clean package -Dmaven.test.skip=true
+
+-- build docker image --
+docker build -t samnangprod/jobms:latest .
+
+-- push to docker hub --
+docker push samnangprod/jobms:latest
+
+./mvnw clean package -Dmaven.test.skip=true
+docker build -t samnangprod/reviewms:latest .
+docker push samnangprod/reviewms:latest
+
+./mvnw clean package -Dmaven.test.skip=true
+docker build -t samnangprod/companyms:latest .
+docker push samnangprod/companyms:latest
