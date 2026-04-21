@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: review-service
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/jobdb
+    username: admin
+    password: admin123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+
+  cloud:
+    openfeign:
+      micrometer:
+        enabled: true
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+
+server:
+  port: 8083
+
+job-service:
+  url: http://job:8082
+
+company-service:
+  url: http://company:8081
+
+review-service:
+  url: http://review:8083
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+
+logging:
+  pattern:
+    correlation: "[%X{traceId:-},%X{spanId:-}] "

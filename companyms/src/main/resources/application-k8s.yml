@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: company-service   # Name of your service
+
+  datasource:               # ✅ MUST be under spring
+    url: jdbc:postgresql://postgres:5432/jobdb   # Use K8s service name, not localhost
+    username: admin
+    password: admin123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:                      # JPA / Hibernate config
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  rabbitmq:                 # RabbitMQ config (K8s service name)
+    host: rabbitmq          # ❌ don't use localhost in Kubernetes
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+
+  cloud:
+    openfeign:
+      micrometer:
+        enabled: true       # Enable metrics for Feign
+
+server:
+  port: 8081                # App port
+
+# Microservice internal URLs (use service names in K8s)
+job-service:
+  url: http://job:8082
+
+company-service:
+  url: http://company:8081
+
+review-service:
+  url: http://review:8083
+
+# Disable Eureka (Kubernetes handles discovery)
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+#    serviceUrl:
+#      defaultZone: http://servicereg:8761/eureka/
+
+# Observability (Zipkin tracing)
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans

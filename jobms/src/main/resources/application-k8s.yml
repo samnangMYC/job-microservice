@@ -1,0 +1,91 @@
+spring:
+  application:
+    name: job-service  # Service name
+
+  #  config:
+  #    import: "optional:configserver:http://config-server:8888"  # Enable only if config server is deployed in K8s
+
+  datasource:  # ✅ Must be under spring
+    url: jdbc:postgresql://postgres:5432/jobdb  # Use K8s service name
+    username: admin
+    password: admin123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  cloud:
+    openfeign:
+      micrometer:
+        enabled: true
+
+# Internal service URLs inside Kubernetes
+job-service:
+  url: http://job:8082
+
+company-service:
+  url: http://company:8081
+
+review-service:
+  url: http://review:8083
+
+server:
+  port: 8082
+
+# Disable Eureka because Kubernetes handles service discovery
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+#    serviceUrl:
+#      defaultZone: http://servicereg:8761/eureka/
+
+# Spring Boot Actuator + Zipkin
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers,circuitbreakerevents
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+
+# Resilience4j config
+resilience4j:
+  circuitbreaker:
+    instances:
+      companyBreaker:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+  retry:
+    instances:
+      companyBreaker:
+        maxAttempts: 5
+        waitDuration: 2s
+
+  ratelimiter:
+    instances:
+      companyBreaker:
+        limitForPeriod: 3
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
