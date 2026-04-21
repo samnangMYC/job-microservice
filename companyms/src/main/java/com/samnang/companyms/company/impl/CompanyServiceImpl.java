@@ -1,8 +1,11 @@
 package com.samnang.companyms.company.impl;
 
+import com.samnang.companyms.clients.ReviewClient;
 import com.samnang.companyms.company.Company;
 import com.samnang.companyms.company.CompanyRepository;
 import com.samnang.companyms.company.CompanyService;
+import com.samnang.companyms.dto.ReviewMessage;
+import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CompanyServiceImpl implements CompanyService {
     private final CompanyRepository companyRepository;
+    private final ReviewClient reviewClient;
 
     @Override
     public Company createCompany(Company company) {
@@ -50,4 +54,18 @@ public class CompanyServiceImpl implements CompanyService {
 
         companyRepository.delete(company);
     }
+
+    @Override
+    public void updateCompany(ReviewMessage reviewMessage) {
+        System.out.println(reviewMessage.getComment());
+
+        Company company = companyRepository.findById(reviewMessage.getId())
+                .orElseThrow(() -> new NotFoundException("Company not found"));
+
+        double averageRating = reviewClient.getAverageRatingForCompany(reviewMessage.getCompanyId());
+        company.setRating(averageRating);
+        companyRepository.save(company);
+    }
+
+
 }

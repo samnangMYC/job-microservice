@@ -2,18 +2,22 @@ package com.samnang.jobms.job.impl;
 
 import com.samnang.jobms.clients.CompanyClient;
 import com.samnang.jobms.clients.ReviewClient;
-import com.samnang.jobms.external.Company;
 import com.samnang.jobms.external.CompanyDTO;
-import com.samnang.jobms.external.Review;
 import com.samnang.jobms.external.ReviewDTO;
 import com.samnang.jobms.job.Job;
 import com.samnang.jobms.job.JobRepository;
 import com.samnang.jobms.job.JobService;
 import com.samnang.jobms.job.dto.JobDTO;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -25,33 +29,33 @@ public class JobServiceImpl implements JobService {
     private final CompanyClient companyClient;
     private final ReviewClient reviewClient;
 
+    int attempt = 0;
+
     @Override
     public Job createJob(Job job) {
        return jobRepository.save(job);
     }
 
-
     @Override
+    @RateLimiter(name = "companyBreaker", fallbackMethod = "companyBreakerFallback")
     public List<JobDTO> getAllJobs() {
+        System.out.println("Attempt: " + attempt++);
+
         List<Job> jobs = jobRepository.findAll();
 
         return jobs.stream()
-                .map(job ->{
-
-                    // call company-service
+                .map(job -> {
                     CompanyDTO company = null;
                     try {
                         company = companyClient.getCompany(job.getCompanyId());
                     } catch (Exception e) {
-                        // log warning
                         log.warn("Company fetch failed: {}", job.getCompanyId(), e);
                     }
 
-                    // call review
-                    List<ReviewDTO> reviews =  List.of();
+                    List<ReviewDTO> reviews = List.of();
                     try {
                         reviews = reviewClient.getReviews(job.getCompanyId());
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         log.warn("Review fetch failed: {}", job.getCompanyId(), e);
                     }
 
@@ -64,8 +68,13 @@ public class JobServiceImpl implements JobService {
                             .company(company)
                             .reviews(reviews)
                             .build();
-                }).toList();
+                })
+                .toList();
+    }
 
+    public List<JobDTO> companyBreakerFallback(Throwable t) {
+        log.warn("Fallback triggered: {}", t.getMessage());
+        return List.of();
     }
     @Override
     public Job getJobById(Long id) {

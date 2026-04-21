@@ -1,5 +1,6 @@
 package com.samnang.reviewms.review;
 
+import com.samnang.reviewms.messaging.ReviewMessageProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -9,9 +10,11 @@ import java.util.List;
 public class ReviewServiceImpl implements ReviewService{
 
     private final ReviewRepository reviewRepository;
+    private final ReviewMessageProducer reviewMessageProducer;
+
 
     @Override
-    public List<Review> getAllReviews() {
+    public List<Review> getAllReviews(Long companyId) {
         return reviewRepository.findAll();
     }
 
@@ -28,8 +31,8 @@ public class ReviewServiceImpl implements ReviewService{
 
     @Override
     public Review createReview(Long companyId, Review review) {
+        reviewMessageProducer.sendMessage(review);
         review.setCompanyId(companyId);
-
         return reviewRepository.save(review);
     }
 

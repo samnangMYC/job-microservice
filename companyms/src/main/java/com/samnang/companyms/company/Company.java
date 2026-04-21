@@ -17,6 +17,8 @@ public class Company {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Double rating;
+
     private String name;
 
     private String email;
@@ -27,8 +29,4 @@ public class Company {
 
     @Column(length = 1000)
     private String description;
-
-//    private Long jobId;
-//
-//    private Long reviewId;
 }

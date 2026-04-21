@@ -3,7 +3,7 @@ package com.samnang.reviewms.review;
 import java.util.List;
 
 public interface ReviewService {
-    List<Review> getAllReviews();
+    List<Review> getAllReviews(Long companyId);
 
     Review getReviewById(Long id);
 

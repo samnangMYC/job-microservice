@@ -1,6 +1,5 @@
 package com.samnang.reviewms.review;
 
-import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +12,6 @@ import java.util.List;
 public class ReviewController {
 
     private final ReviewService reviewService;
-
 
     @GetMapping("/{id}")
     public ResponseEntity<Review> getReviewById(@PathVariable Long id) {
@@ -41,9 +39,17 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.updateReview(id, review));
     }
 
+    @GetMapping("/averageRating")
+    public Double getAverageReview(@RequestParam Long companyId){
+        List<Review> reviewsList = reviewService.getAllReviews(companyId);
+        return reviewsList.stream().mapToDouble(Review::getRating).average()
+                .orElse(0.0);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteReview(@PathVariable Long id) {
         reviewService.deleteReview(id);
         return ResponseEntity.ok("Review deleted successfully");
     }
+
 }

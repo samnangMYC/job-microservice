@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: "review-service"
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/jobdb
+    username: admin
+    password: admin123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8083
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: "http://servicereg:8761/eureka/"
+
+  management:
+    tracing:
+      sampling:
+        probability: 1.0
+    zipkin:
+      tracing:
+        endpoint: http://zipkin:9411/api/v2/spans
+
+  cloud:
+    openfeign:
+      micrometer:
+        enabled: true
+
+logging:
+  pattern:
+    correlation: "[%X{traceId:-},%X{spanId:-}] "

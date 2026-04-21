@@ -3,10 +3,10 @@ spring:
     name: job-service
 
   config:
-    import: "optional:configserver:http://localhost:8888"
+    import: "optional:configserver:http://config-server:8888"
 
   datasource:
-    url: jdbc:postgresql://localhost:5532/jobdb
+    url: jdbc:postgresql://postgres:5432/jobdb
     username: admin
     password: admin123
     driver-class-name: org.postgresql.Driver
@@ -16,20 +16,19 @@ spring:
       ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
-job-service:
-  url: "http://localhost:8082"
-
-company-service:
-  url: "http://localhost:8081"
-
-review-service:
-  url: "http://localhost:8083"
-
-
   cloud:
     openfeign:
       micrometer:
         enabled: true
+
+job-service:
+  url: "http://job:8082"
+
+company-service:
+  url: "http://company:8081"
+
+review-service:
+  url: "http://review:8083"
 
 server:
   port: 8082
@@ -39,7 +38,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     serviceUrl:
-      defaultZone: "http://localhost:8761/eureka/"
+      defaultZone: "http://servicereg:8761/eureka/"
 
 management:
   endpoints:
